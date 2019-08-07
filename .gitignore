@@ -1,0 +1,11 @@
+# folder ignore
+*/.idea/
+homework2
+homework3
+homework4_optional
+#files ignore
+
+*.iml
+*.xml
+README.md
+Руководство по выполнению домашних заданий по Javascript.md
