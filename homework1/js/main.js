@@ -1,131 +1,96 @@
+const sizes = {
+    SIZE_SMALL: {
+        price:50,
+        calories:20
+    },
+    SIZE_LARGE: {
+        price:100,
+        calories:40
+    }
+};
+const  stuffs = {
+    STUFFING_CHEESE: {
+        price:10,
+        calories:20
+    },
+    STUFFING_POTATO: {
+    price:15,
+    calories:10
+    },
+    STUFFING_SALAD: {
+        price:20,
+        calories:5
+    }
+};
+const toppings = {
+    TOPPING_MAYO: {
+        price:20,
+        calories:5
+    },
+    TOPPING_SPICE: {
+        price:15,
+        calories:0
+    },
+};
 /**
- * Класс, объекты которого описывают параметры гамбургера.
  *
+ * @param size размер
+ * @param stuffing начинка
  * @constructor
- * @param size        Размер
- * @param stuffing    Начинка
- * @throws {HamburgerException}  При неправильном использовании
  */
-
 function Hamburger(size, stuffing) {
-
+    this.topping =[];
     try{
-        if(size && stuffing){
-            let checkSize =Hamburger.__proto__.check.call(Hamburger, size,Hamburger.TYPE_SERVICES.SIZE);
-            let checkStuffing =Hamburger.__proto__.check.call(Hamburger, stuffing,Hamburger.TYPE_SERVICES.STUFFING);
-
-            if(checkSize.res){
+        if (size && stuffing){
+            if((size in sizes)&&(stuffing in stuffs)){
                 Object.defineProperty(this,'size',{
                     value:size,
                     configurable:true,
                     writable:false
                 });
-            }else {
-                throw new HamburgerException(`invalid size ${checkSize.description}`)
-            }
-            if(checkStuffing.res){
                 Object.defineProperty(this,'stuffing',{
                     value:stuffing,
                     configurable:true,
                     writable:false
                 });
-            }else {
-                throw new HamburgerException(`invalid stuffing ${checkStuffing.description}`)
             }
+            else {
+                throw new HamburgerException(`invalid '${!(size in sizes)?size:stuffing}'`)
+            }
+        }else {
+            throw new HamburgerException(`no ${!size?Object.keys({size})[0]:Object.keys({stuffing})[0]} given`)
         }
-        else{
-            throw new HamburgerException('no size or stuffing given')
-        }
-        this.topping=[];
+
     }
     catch (e) {
-        console.log(e.message);
+        console.error(e.message);
     }
 
 
 }
 /* Размеры, виды начинок и добавок */
-Hamburger.SIZE_SMALL = {
-    price:50,
-    calories:20
-};
-Hamburger.SIZE_LARGE = {
-    price:100,
-    calories:40
-};
-Hamburger.STUFFING_CHEESE = {
-    price:10,
-    calories:20
-};
-Hamburger.STUFFING_SALAD = {
-    price:20,
-    calories:5
-};
-Hamburger.STUFFING_POTATO = {
-    price:15,
-    calories:10
-};
-Hamburger.TOPPING_MAYO = {
-    price:20,
-    calories:5
-};
-Hamburger.TOPPING_SPICE = {
-    price:15,
-    calories:0
-};
-Hamburger.TYPE_SERVICES={
-    SIZE:"SIZE",
-    STUFFING:"STUFFING",
-    TOPPING:"TOPPING"
-};
-/**
- * Проверка на соответствие нужному типу
- * @param obj передеваемый объект на проверку
- * @param typeName нужный тип
- * @return объект с boolean найденно ли обьект и наименование обьекта который мы искали для вывода в ошибку
- */
-Hamburger.__proto__.check =function(obj,typeName) {
-    let result={
-        res:false,
-        description:''
-    };
+Hamburger.SIZE_SMALL = "SIZE_SMALL";
+Hamburger.SIZE_LARGE = "SIZE_LARGE";
+Hamburger.STUFFING_CHEESE = 'STUFFING_CHEESE';
+Hamburger.STUFFING_SALAD = "STUFFING_SALAD";
+Hamburger.STUFFING_POTATO = "STUFFING_POTATO";
+Hamburger.TOPPING_MAYO = "TOPPING_MAYO";
+Hamburger.TOPPING_SPICE = "TOPPING_SPICE";
 
-    for(let key in this){
-        if(this[key]===obj){
-            result.description=key;
-        }
-        if(this[key]===obj&&key.includes(typeName)){
-            result.res=true;
-        }
-    }
-    return result;
-};
 /**
- * @param topping объект который идет на поиск дубликата
- * @param mode режим работы функции false - просто поиск и true - удалить искаемый обьекта
- * @return {boolean} возратить результат поиска
+ * @param field поле по которому нужно искать
+ * @return {Number}
  */
-Hamburger.__proto__.searchDuplicates = function(topping, mode=false){
-    for(let i = 0;i<this.topping.length;i++){
-        if(this.topping[i]===topping){
-            if(mode===true){
-                this.topping = this.topping.splice(i+1,i+2);
-            }
-            return false
-        }
-    }
-    return true
-};
-
-Hamburger.__proto__.countAmount = function(field){
-    let result =this.size[field] + this.stuffing[field];
+Hamburger.countAmount = function(field){
+    let result =sizes[this.size][field] + stuffs[this.stuffing][field];
     if(this.topping.length){
         this.topping.forEach((element)=>{
-            result+=element[field];
-        });
+            result+=toppings[element][field];
+        })
     }
     return result;
 };
+
 /**
  * Добавить добавку к гамбургеру. Можно добавить несколько
  * добавок, при условии, что они разные.
@@ -134,16 +99,19 @@ Hamburger.__proto__.countAmount = function(field){
  * @throws {HamburgerException}  При неправильном использовании
  */
 Hamburger.prototype.addTopping = function (topping) {
-    try{
-        let checkTopping =Hamburger.__proto__.check.call(Hamburger, topping,Hamburger.TYPE_SERVICES.TOPPING);
-        let checkDuplicate = Hamburger.__proto__.searchDuplicates.call(this,topping);
-        if(checkTopping.res&&checkDuplicate){
-            this.topping.push(topping);
-        }else {
-            throw new HamburgerException(`duplicate topping ${checkTopping.description}`)
+    try {
+        if(topping in toppings){
+            if(!this.topping.some((element)=>{return element===topping})){
+                this.topping.push(topping);
+            }else {
+                throw new HamburgerException(`duplicate topping '${topping}'`);
+            }
+        }
+        else {
+            throw new HamburgerException(`invalid ${topping}`);
         }
     }catch (e) {
-        console.log(e.message);
+        console.error(e.message);
     }
 };
 
@@ -156,13 +124,15 @@ Hamburger.prototype.addTopping = function (topping) {
  */
 Hamburger.prototype.removeTopping = function (topping) {
     try {
-        let checkTopping =Hamburger.__proto__.check.call(Hamburger, topping,Hamburger.TYPE_SERVICES.TOPPING);
-        let checkDuplicate = Hamburger.__proto__.searchDuplicates.call(this,topping, true);
-        if(checkTopping&&checkDuplicate){
-            throw new HamburgerException(`is not defined ${checkTopping.description}`)
+        if(this.topping.some((element)=>{return element===topping})){
+            this.topping = this.topping.filter((element)=>{
+                return element!==topping;
+            });
+        }else {
+            throw new HamburgerException(`${topping} is not defined`);
         }
     }catch (e) {
-        console.log(e.message);
+        console.error(e.message);
     }
 };
 
@@ -173,16 +143,6 @@ Hamburger.prototype.removeTopping = function (topping) {
  *                 Hamburger.TOPPING_*
  */
 Hamburger.prototype.getToppings = function () {
-    // let result = "not found topping";
-    // if(this.topping.length){
-    //     result = [];
-    //     this.topping.forEach((element)=>{
-    //        result.push(Hamburger.__proto__.check.call(Hamburger, element, Hamburger.TYPE_SERVICES.TOPPING ).description);
-    //     });
-    //     return result;
-    // }
-    // return result;
-
     return this.topping;
 };
 
@@ -190,7 +150,6 @@ Hamburger.prototype.getToppings = function () {
  * Узнать размер гамбургера
  */
 Hamburger.prototype.getSize = function () {
-    //return Hamburger.__proto__.check.call(Hamburger, this.size,Hamburger.TYPE_SERVICES.SIZE);
     return this.size;
 };
 
@@ -198,7 +157,6 @@ Hamburger.prototype.getSize = function () {
  * Узнать начинку гамбургера
  */
 Hamburger.prototype.getStuffing = function () {
-    //return Hamburger.__proto__.check.call(Hamburger, this.stuffing,Hamburger.TYPE_SERVICES.STUFFING);
     return this.stuffing;
 };
 
@@ -207,7 +165,7 @@ Hamburger.prototype.getStuffing = function () {
  * @return {Number} Цена в тугриках
  */
 Hamburger.prototype.calculatePrice = function () {
-    return  Hamburger.__proto__.countAmount.call(this,'price');
+    return  Hamburger.countAmount.call(this,"price")
 };
 
 /**
@@ -215,7 +173,7 @@ Hamburger.prototype.calculatePrice = function () {
  * @return {Number} Калорийность в калориях
  */
 Hamburger.prototype.calculateCalories = function () {
-    return  Hamburger.__proto__.countAmount.call(this,'calories');
+    return  Hamburger.countAmount.call(this,"calories")
 };
 
 /**
@@ -225,10 +183,8 @@ Hamburger.prototype.calculateCalories = function () {
  */
 function HamburgerException (message){
     this.message = message;
-    this.name = "Исключение, определенное пользователем";
+    this.name ="Исключение, определенное пользователем";
 }
-
-
 
 
 
@@ -251,19 +207,19 @@ console.log("Is hamburger large: %s", hamburger.getSize() === Hamburger.SIZE_LAR
 // Убрать добавку
 hamburger.removeTopping(Hamburger.TOPPING_SPICE);
 console.log("Have %d toppings", hamburger.getToppings().length); // 1
-
-
-
-
-// не передали обязательные параметры
-let h2 = new Hamburger(); // => HamburgerException: no size given
-
-// передаем некорректные значения, добавку вместо размера
-let h3 = new Hamburger(Hamburger.TOPPING_SPICE, Hamburger.TOPPING_SPICE);
-// => HamburgerException: invalid size 'TOPPING_SAUCE'
-
-// добавляем много добавок
-let h4 = new Hamburger(Hamburger.SIZE_SMALL, Hamburger.STUFFING_CHEESE);
-h4.addTopping(Hamburger.TOPPING_MAYO);
-h4.addTopping(Hamburger.TOPPING_MAYO);
-// HamburgerException: duplicate topping 'TOPPING_MAYO'
+//
+//
+//
+//
+// // не передали обязательные параметры
+//let h2 = new Hamburger(); // => HamburgerException: no size given
+//
+// // передаем некорректные значения, добавку вместо размера
+// let h3 = new Hamburger(Hamburger.TOPPING_SPICE, Hamburger.TOPPING_SPICE);
+// // => HamburgerException: invalid size 'TOPPING_SAUCE'
+//
+// // добавляем много добавок
+// let h4 = new Hamburger(Hamburger.SIZE_SMALL, Hamburger.STUFFING_CHEESE);
+// h4.addTopping(Hamburger.TOPPING_MAYO);
+// h4.addTopping(Hamburger.TOPPING_MAYO);
+// // HamburgerException: duplicate topping 'TOPPING_MAYO'
