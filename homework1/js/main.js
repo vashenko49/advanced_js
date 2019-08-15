@@ -1,37 +1,40 @@
-const sizes = {
-    SIZE_SMALL: {
+const sizes = [
+    {
+        name:'SIZE_SMALL',
         price:50,
         calories:20
-    },
-    SIZE_LARGE: {
+    },{
+        name:'SIZE_LARGE',
         price:100,
         calories:40
     }
-};
-const  stuffs = {
-    STUFFING_CHEESE: {
+];
+const  stuffs = [
+    {
+        name:'STUFFING_CHEESE',
         price:10,
         calories:20
-    },
-    STUFFING_POTATO: {
-    price:15,
-    calories:10
-    },
-    STUFFING_SALAD: {
+    },{
+        name:'STUFFING_POTATO',
+        price:15,
+        calories:10
+    },{
+        name:'STUFFING_SALAD',
         price:20,
         calories:5
     }
-};
-const toppings = {
-    TOPPING_MAYO: {
+];
+const toppings = [
+    {
+        name:'TOPPING_MAYO',
         price:20,
         calories:5
-    },
-    TOPPING_SPICE: {
+    },{
+        name:'TOPPING_SPICE',
         price:15,
         calories:0
-    },
-};
+    }
+];
 /**
  *
  * @param size размер
@@ -39,24 +42,11 @@ const toppings = {
  * @constructor
  */
 function Hamburger(size, stuffing) {
-    this.topping =[];
+    this._topping =[];
     try{
         if (size && stuffing){
-            if((size in sizes)&&(stuffing in stuffs)){
-                Object.defineProperty(this,'size',{
-                    value:size,
-                    configurable:true,
-                    writable:false
-                });
-                Object.defineProperty(this,'stuffing',{
-                    value:stuffing,
-                    configurable:true,
-                    writable:false
-                });
-            }
-            else {
-                throw new HamburgerException(`invalid '${!(size in sizes)?size:stuffing}'`)
-            }
+            Hamburger.checkData.call(this,sizes,size,'size');
+            Hamburger.checkData.call(this,stuffs,stuffing,'stuffing');
         }else {
             throw new HamburgerException(`no ${!size?Object.keys({size})[0]:Object.keys({stuffing})[0]} given`)
         }
@@ -77,17 +67,38 @@ Hamburger.STUFFING_POTATO = "STUFFING_POTATO";
 Hamburger.TOPPING_MAYO = "TOPPING_MAYO";
 Hamburger.TOPPING_SPICE = "TOPPING_SPICE";
 
+
+/**
+ * @param array {Array} массив где искать
+ * @param field {String} что искать
+ * @param nameVariable {String} куда записывать если нашли
+ */
+Hamburger.checkData=function(array,field,nameVariable){
+    array.some((element)=>{
+        if(element.name===field){
+            Object.defineProperty(this,nameVariable,{
+                value:element,
+                configurable:true,
+                writable:false
+            });
+            return true;
+        }
+        else {
+            throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
+        }
+    });
+};
+
 /**
  * @param field поле по которому нужно искать
  * @return {Number}
  */
 Hamburger.countAmount = function(field){
-    let result =sizes[this.size][field] + stuffs[this.stuffing][field];
-    if(this.topping.length){
-        this.topping.forEach((element)=>{
-            result+=toppings[element][field];
-        })
-    }
+    //пробовал переделать на обход массива reduce но ничего не получислось, не отрабатывает когда один элемент в массиве потому что перебераем массив объектов
+    let result =this.size[field] + this.stuffing[field];
+    this._topping.forEach((element)=>{
+       result+=element[field];
+    });
     return result;
 };
 
@@ -95,20 +106,35 @@ Hamburger.countAmount = function(field){
  * Добавить добавку к гамбургеру. Можно добавить несколько
  * добавок, при условии, что они разные.
  *
- * @param topping     Тип добавки
+ * @param _topping     Тип добавки
  * @throws {HamburgerException}  При неправильном использовании
  */
-Hamburger.prototype.addTopping = function (topping) {
+Hamburger.prototype.addTopping = function (_topping) {
+
     try {
-        if(topping in toppings){
-            if(!this.topping.some((element)=>{return element===topping})){
-                this.topping.push(topping);
-            }else {
-                throw new HamburgerException(`duplicate topping '${topping}'`);
+
+        //проверка на наличие переданого значения
+        if(_topping){
+            //проверка с колекцией данных, существует ли такой объект
+            if (!toppings.some((element)=>{
+                if(element.name===_topping){
+                    //проверка на дубликат
+                    if(!this._topping.some((element)=>{return element.name === _topping;})){
+                        this._topping.push(element);
+                    }
+                    else {
+                        throw new HamburgerException(`duplicate topping '${_topping}'`);
+                    }
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            })) {
+                throw new HamburgerException(`invalid ${_topping}`);
             }
-        }
-        else {
-            throw new HamburgerException(`invalid ${topping}`);
+        }else {
+            throw new HamburgerException('no given topping');
         }
     }catch (e) {
         console.error(e.message);
@@ -119,17 +145,24 @@ Hamburger.prototype.addTopping = function (topping) {
  * Убрать добавку, при условии, что она ранее была
  * добавлена.
  *
- * @param topping   Тип добавки
+ * @param _topping   Тип добавки
  * @throws {HamburgerException}  При неправильном использовании
  */
-Hamburger.prototype.removeTopping = function (topping) {
+Hamburger.prototype.removeTopping = function (_topping) {
     try {
-        if(this.topping.some((element)=>{return element===topping})){
-            this.topping = this.topping.filter((element)=>{
-                return element!==topping;
-            });
+        //проверка на переданые данные
+        if(_topping){
+            //проверка на существование таких данных в текущих топпингах
+            if(!this._topping.some((element)=>{
+                if(element.name===_topping) {
+                    this._topping = this._topping.filter((element)=>{return element.name!==_topping});
+                    return true
+                }
+            })){
+                throw new HamburgerException(`${_topping} is not defined`);
+            }
         }else {
-            throw new HamburgerException(`${topping} is not defined`);
+                throw new HamburgerException('no given topping');
         }
     }catch (e) {
         console.error(e.message);
@@ -143,21 +176,23 @@ Hamburger.prototype.removeTopping = function (topping) {
  *                 Hamburger.TOPPING_*
  */
 Hamburger.prototype.getToppings = function () {
-    return this.topping;
+    return this._topping.map((element)=>{
+        return element.name;
+    });
 };
 
 /**
  * Узнать размер гамбургера
  */
 Hamburger.prototype.getSize = function () {
-    return this.size;
+    return this.size.name;
 };
 
 /**
  * Узнать начинку гамбургера
  */
 Hamburger.prototype.getStuffing = function () {
-    return this.stuffing;
+    return this.stuffing.name;
 };
 
 /**
@@ -187,24 +222,21 @@ function HamburgerException (message){
 }
 
 
-
-
-
-// маленький гамбургер с начинкой из сыра
+console.log('маленький гамбургер с начинкой из сыра');
 let hamburger = new Hamburger(Hamburger.SIZE_SMALL, Hamburger.STUFFING_CHEESE);
-// добавка из майонеза
+console.log('добавка из майонеза');
 hamburger.addTopping(Hamburger.TOPPING_MAYO);
-// спросим сколько там калорий
+console.log('спросим сколько там калорий');
 console.log("Calories: %f", hamburger.calculateCalories());
-// сколько стоит
+console.log('сколько стоит');
 console.log("Price: %f", hamburger.calculatePrice());
-// я тут передумал и решил добавить еще приправу
+console.log('я тут передумал и решил добавить еще приправу');
 hamburger.addTopping(Hamburger.TOPPING_SPICE);
-// А сколько теперь стоит?
+console.log('А сколько теперь стоит?');
 console.log("Price with sauce: %f", hamburger.calculatePrice());
-// Проверить, большой ли гамбургер?
+console.log('Проверить, большой ли гамбургер?');
 console.log("Is hamburger large: %s", hamburger.getSize() === Hamburger.SIZE_LARGE); // -> false
-// Убрать добавку
+console.log('Убрать добавку');
 hamburger.removeTopping(Hamburger.TOPPING_SPICE);
 console.log("Have %d toppings", hamburger.getToppings().length); // 1
 //
@@ -212,7 +244,7 @@ console.log("Have %d toppings", hamburger.getToppings().length); // 1
 //
 //
 // // не передали обязательные параметры
-//let h2 = new Hamburger(); // => HamburgerException: no size given
+// let h2 = new Hamburger(); // => HamburgerException: no size given
 //
 // // передаем некорректные значения, добавку вместо размера
 // let h3 = new Hamburger(Hamburger.TOPPING_SPICE, Hamburger.TOPPING_SPICE);
