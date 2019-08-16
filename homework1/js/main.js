@@ -75,7 +75,7 @@ Hamburger.TOPPING_SPICE = "TOPPING_SPICE";
  */
 Hamburger.checkData=function(array,field,nameVariable){
     try {
-        array.some((element)=>{
+        if(!array.some((element)=>{
             if(element.name===field){
                 Object.defineProperty(this,nameVariable,{
                     value:element,
@@ -84,10 +84,9 @@ Hamburger.checkData=function(array,field,nameVariable){
                 });
                 return true;
             }
-            else {
-                throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
-            }
-        });
+        })){
+            throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
+        }
     }catch (e) {
         console.error(e.message);
     }
@@ -222,7 +221,7 @@ function HamburgerException (message){
 
 
 console.log('маленький гамбургер с начинкой из сыра');
-let hamburger = new Hamburger(Hamburger.SIZE_SMALL, Hamburger.STUFFING_CHEESE);
+let hamburger = new Hamburger(Hamburger.SIZE_LARGE, Hamburger.STUFFING_SALAD);
 console.log('добавка из майонеза');
 hamburger.addTopping(Hamburger.TOPPING_MAYO);
 console.log('спросим сколько там калорий');

@@ -39,6 +39,7 @@ const toppings = [
 class Hamburger{
     constructor(size, stuffing) {
         this.size = size;
+        this.stuffing = stuffing
     }
 
     static SIZE_SMALL = "SIZE_SMALL";
@@ -53,40 +54,51 @@ class Hamburger{
         return this._size;
     }
     set size(val){
-        if(val){
-            if(sizes.some((elem)=>val===elem)){
-                this._size=val;
-            }else {
-                throw new HamburgerException(`invalide`)
-            }
-        }else {
-            throw HamburgerException(`no size given`)
-        }
+        Hamburger.checkData.call(this,sizes,val,'_size');
     }
 
-
-    static HamburgerException (message){
-        this.message = message;
-        this.name ="Исключение, определенное пользователем";
+    get stuffing(){
+        return this._stuffing;
+    }
+    set stuffing(val){
+        Hamburger.checkData.call(this,stuffs,val,'_stuffing');
     }
 
     static checkData (array,field,nameVariable){
-        array.some((element)=>{
-            if(element.name===field){
-                Object.defineProperty(this,nameVariable,{
-                    value:element,
-                    configurable:true,
-                    writable:false
+        try {
+            if(field) {
+                array.some((element) => {
+                    if (element.name === field) {
+                        Object.defineProperty(this, nameVariable, {
+                            value: element,
+                            configurable: true,
+                            writable: false
+                        });
+                        return true;
+                    } else {
+                        throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
+                    }
                 });
-                return true;
+            }else {
+                throw new HamburgerException(`no given ${nameVariable}`);
             }
-            else {
-                throw new Hamburger.HamburgerException(`invalid ${nameVariable} '${field}'`);
-            }
-        });
+        }catch (e) {
+            console.error(e.message);
+        }
     };
 
 }
 
+/**
+ * Представляет информацию об ошибке в ходе работы с гамбургером.
+ * Подробности хранятся в свойстве message.
+ * @constructor
+ */
+function HamburgerException (message){
+    this.message = message;
+    this.name ="Исключение, определенное пользователем";
+}
+
+
 debugger;
-let hamburger = new Hamburger(Hamburger.SIZE_SMALL,Hamburger.STUFFING_CHEESE);
+let hamburger = new Hamburger(Hamburger.SIZE_LARGE, Hamburger.STUFFING_POTATO);
