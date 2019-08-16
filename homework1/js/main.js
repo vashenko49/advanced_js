@@ -45,10 +45,10 @@ function Hamburger(size, stuffing) {
     this._topping =[];
     try{
         if (size && stuffing){
-            Hamburger.checkData.call(this,sizes,size,'size');
-            Hamburger.checkData.call(this,stuffs,stuffing,'stuffing');
+            Hamburger.checkData.call(this,sizes,size,'_size');
+            Hamburger.checkData.call(this,stuffs,stuffing,'_stuffing');
         }else {
-            throw new HamburgerException(`no ${!size?Object.keys({size})[0]:Object.keys({stuffing})[0]} given`)
+            throw new HamburgerException(`no ${!size?"size":"stuffing"} given`)
         }
 
     }
@@ -94,12 +94,7 @@ Hamburger.checkData=function(array,field,nameVariable){
  * @return {Number}
  */
 Hamburger.countAmount = function(field){
-    //пробовал переделать на обход массива reduce но ничего не получислось, не отрабатывает когда один элемент в массиве потому что перебераем массив объектов
-    let result =this.size[field] + this.stuffing[field];
-    this._topping.forEach((element)=>{
-       result+=element[field];
-    });
-    return result;
+    return this._size[field] + this._stuffing[field] + (this._topping[0] ? (this._topping.length===1?this._topping[0][field]:(this._topping.reduce((sum, element)=>{return sum[field] + element[field]}))): 0);
 };
 
 /**
@@ -185,14 +180,14 @@ Hamburger.prototype.getToppings = function () {
  * Узнать размер гамбургера
  */
 Hamburger.prototype.getSize = function () {
-    return this.size.name;
+    return this._size.name;
 };
 
 /**
  * Узнать начинку гамбургера
  */
 Hamburger.prototype.getStuffing = function () {
-    return this.stuffing.name;
+    return this._stuffing.name;
 };
 
 /**
@@ -246,9 +241,9 @@ console.log("Have %d toppings", hamburger.getToppings().length); // 1
 // // не передали обязательные параметры
 // let h2 = new Hamburger(); // => HamburgerException: no size given
 //
-// // передаем некорректные значения, добавку вместо размера
+// передаем некорректные значения, добавку вместо размера
 // let h3 = new Hamburger(Hamburger.TOPPING_SPICE, Hamburger.TOPPING_SPICE);
-// // => HamburgerException: invalid size 'TOPPING_SAUCE'
+// => HamburgerException: invalid size 'TOPPING_SAUCE'
 //
 // // добавляем много добавок
 // let h4 = new Hamburger(Hamburger.SIZE_SMALL, Hamburger.STUFFING_CHEESE);
