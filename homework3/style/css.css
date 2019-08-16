@@ -1,0 +1,20 @@
+.table{
+
+}
+.td{
+    border: 1px solid grey;
+    width: 20px;
+    height: 20px;
+}
+.td-change{
+    background-color: rebeccapurple;
+}
+/*противоположные цветы*/
+.table-inverse .td{
+    background-color: rebeccapurple;
+}
+
+.table-inverse .td-change{
+    background: white;
+}
+
