@@ -74,23 +74,27 @@ Hamburger.TOPPING_SPICE = "TOPPING_SPICE";
  * @param nameVariable {String} куда записывать если нашли
  */
 Hamburger.checkData=function(array,field,nameVariable){
-    array.some((element)=>{
-        if(element.name===field){
-            Object.defineProperty(this,nameVariable,{
-                value:element,
-                configurable:true,
-                writable:false
-            });
-            return true;
-        }
-        else {
-            throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
-        }
-    });
+    try {
+        array.some((element)=>{
+            if(element.name===field){
+                Object.defineProperty(this,nameVariable,{
+                    value:element,
+                    configurable:true,
+                    writable:false
+                });
+                return true;
+            }
+            else {
+                throw new HamburgerException(`invalid ${nameVariable} '${field}'`);
+            }
+        });
+    }catch (e) {
+        console.error(e.message);
+    }
 };
 
 /**
- * @param field поле по которому нужно искать
+ * @param field поле, по которому нужно искать
  * @return {Number}
  */
 Hamburger.countAmount = function(field){
@@ -145,7 +149,7 @@ Hamburger.prototype.addTopping = function (_topping) {
  */
 Hamburger.prototype.removeTopping = function (_topping) {
     try {
-        //проверка на переданые данные
+        //проверка на переданные данные
         if(_topping){
             //проверка на существование таких данных в текущих топпингах
             if(!this._topping.some((element)=>{
