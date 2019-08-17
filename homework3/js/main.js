@@ -11,7 +11,7 @@ window.addEventListener('load', function () {
         if(table.contains(target)){
             //пропускаю тольео елементы которые имею класс td, например нужно откинуть клики которые происходят на tr  и table
             if(target.classList.contains('td')){
-                target.classList.add('td-change');
+                target.classList.toggle('td-change');
             }
         }else {
             table.classList.toggle('table');
