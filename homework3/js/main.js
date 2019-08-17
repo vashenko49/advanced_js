@@ -1,11 +1,15 @@
 window.addEventListener('load', function () {
 
-    let table = createTable(30,30, 'table', 'tr','td');
     //генерируем таблтцу
+    let table = createTable(30,30, 'table', 'tr','td');
+    //вставить таблицу на страницу
     document.body.prepend(table);
+    //повесил обработчик событий на body
     document.body.addEventListener('click', function(event){
         let target =  event.target;
+        //проверяю является ли елемент на котором произошел клик елементом из table
         if(table.contains(target)){
+            //пропускаю тольео елементы которые имею класс td, например нужно откинуть клики которые происходят на tr  и table
             if(target.classList.contains('td')){
                 target.classList.add('td-change');
             }
@@ -16,7 +20,6 @@ window.addEventListener('load', function () {
 
     });
 });
-
 
 /**
  * создание елемента

@@ -1,17 +1,18 @@
-.table{
-
+.table,.table-inverse{
+    border: 1px solid black;
 }
 .td{
-    border: 1px solid grey;
+    border: 1px solid black;
     width: 20px;
     height: 20px;
 }
 .td-change{
-    background-color: rebeccapurple;
+    background-color: black;
 }
-/*противоположные цветы*/
+
+/*противоположные цвета*/
 .table-inverse .td{
-    background-color: rebeccapurple;
+    background-color: black;
 }
 
 .table-inverse .td-change{
